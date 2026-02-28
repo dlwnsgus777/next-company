@@ -1,21 +1,33 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { Company, CompanyScore, Criteria } from '@/types'
+import { Company, Criteria } from '@/types'
+import { MOCK_COMPANIES, MOCK_CRITERIA } from '@/lib/mock'
 
 // 기본 평가 기준
-const DEFAULT_CRITERIA: Criteria[] = [
-  { id: 'c1', name: '복지', weight: 35, order: 0 },
-  { id: 'c2', name: '집과의 거리', weight: 20, order: 1 },
-  { id: 'c3', name: '연봉', weight: 20, order: 2 },
-  { id: 'c4', name: '회사 규모', weight: 20, order: 3 },
-  { id: 'c5', name: '기술 스택', weight: 5, order: 4 },
-]
+const DEFAULT_CRITERIA: Criteria[] = MOCK_CRITERIA
+
+type FilterTarget = 'ALL' | 'O' | '△'
+type SortBy = 'score' | 'name' | 'deadline'
+type ViewMode = 'kanban' | 'rank'
+
+interface ModalState {
+  companyDetail: { open: boolean; companyId?: string }
+  companyForm: { open: boolean; companyId?: string } // companyId 없으면 추가, 있으면 수정
+  criteria: { open: boolean }
+}
 
 interface AppState {
+  // 데이터
   criteriaList: Criteria[]
   companies: Company[]
 
-  // 평가 기준
+  // UI 상태
+  filterTarget: FilterTarget
+  sortBy: SortBy
+  viewMode: ViewMode
+  modal: ModalState
+
+  // 평가 기준 액션
   setCriteriaList: (list: Criteria[]) => void
 
   // 회사 CRUD
@@ -23,13 +35,34 @@ interface AppState {
   updateCompany: (id: string, data: Partial<Omit<Company, 'id' | 'createdAt'>>) => void
   deleteCompany: (id: string) => void
   updateApplicationStatus: (id: string, status: Company['applicationStatus']) => void
+
+  // UI 액션
+  setFilterTarget: (filter: FilterTarget) => void
+  setSortBy: (sort: SortBy) => void
+  setViewMode: (mode: ViewMode) => void
+
+  // 모달 액션
+  openCompanyDetail: (companyId: string) => void
+  openCompanyAdd: () => void
+  openCompanyEdit: (companyId: string) => void
+  openCriteria: () => void
+  closeModal: (modal: keyof ModalState) => void
 }
 
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
       criteriaList: DEFAULT_CRITERIA,
-      companies: [],
+      companies: MOCK_COMPANIES,
+
+      filterTarget: 'ALL',
+      sortBy: 'score',
+      viewMode: 'kanban',
+      modal: {
+        companyDetail: { open: false },
+        companyForm: { open: false },
+        criteria: { open: false },
+      },
 
       setCriteriaList: (list) => set({ criteriaList: list }),
 
@@ -61,12 +94,46 @@ export const useAppStore = create<AppState>()(
       updateApplicationStatus: (id, status) =>
         set((state) => ({
           companies: state.companies.map((c) =>
-            c.id === id ? { ...c, applicationStatus: status, updatedAt: new Date().toISOString() } : c
+            c.id === id
+              ? { ...c, applicationStatus: status, updatedAt: new Date().toISOString() }
+              : c
           ),
+        })),
+
+      setFilterTarget: (filterTarget) => set({ filterTarget }),
+      setSortBy: (sortBy) => set({ sortBy }),
+      setViewMode: (viewMode) => set({ viewMode }),
+
+      openCompanyDetail: (companyId) =>
+        set((state) => ({
+          modal: { ...state.modal, companyDetail: { open: true, companyId } },
+        })),
+      openCompanyAdd: () =>
+        set((state) => ({
+          modal: { ...state.modal, companyForm: { open: true, companyId: undefined } },
+        })),
+      openCompanyEdit: (companyId) =>
+        set((state) => ({
+          modal: { ...state.modal, companyForm: { open: true, companyId } },
+        })),
+      openCriteria: () =>
+        set((state) => ({
+          modal: { ...state.modal, criteria: { open: true } },
+        })),
+      closeModal: (modal) =>
+        set((state) => ({
+          modal: {
+            ...state.modal,
+            [modal]: { open: false },
+          },
         })),
     }),
     {
       name: 'next-company-store',
+      partialize: (state) => ({
+        criteriaList: state.criteriaList,
+        companies: state.companies,
+      }),
     }
   )
 )
