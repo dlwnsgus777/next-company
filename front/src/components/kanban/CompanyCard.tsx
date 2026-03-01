@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef } from 'react'
 import { CompanyWithScore } from '@/types'
 import { useAppStore } from '@/store/useAppStore'
 import DeadlineBadge from '@/components/common/DeadlineBadge'
@@ -18,14 +19,34 @@ const TARGET_STYLE = {
 export default function CompanyCard({ company }: CompanyCardProps) {
   const openCompanyDetail = useAppStore((s) => s.openCompanyDetail)
   const target = TARGET_STYLE[company.targetStatus]
+  const draggingRef = useRef(false)
+
+  const handleDragStart = (e: React.DragEvent) => {
+    draggingRef.current = true
+    e.dataTransfer.setData('companyId', company.id)
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  const handleDragEnd = () => {
+    // 클릭 이벤트와 구분: dragEnd 직후 onClick이 발생하지 않도록 한 프레임 뒤에 해제
+    setTimeout(() => { draggingRef.current = false }, 0)
+  }
+
+  const handleClick = () => {
+    if (draggingRef.current) return
+    openCompanyDetail(company.id)
+  }
 
   return (
     <div
-      onClick={() => openCompanyDetail(company.id)}
+      draggable
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onClick={handleClick}
       className={cn(
-        'bg-white rounded-xl border border-gray-200 p-3.5 cursor-pointer',
+        'bg-white rounded-xl border border-gray-200 p-3.5 cursor-grab active:cursor-grabbing',
         'hover:border-gray-400 hover:shadow-sm transition-all duration-150',
-        'flex flex-col gap-2'
+        'flex flex-col gap-2 select-none'
       )}
     >
       {/* 순위 */}

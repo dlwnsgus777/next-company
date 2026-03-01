@@ -39,6 +39,7 @@ export default function KanbanBoard() {
             label={col.label}
             companies={grouped[col.id]}
             accentColor={col.accentColor}
+            statuses={col.statuses}
           />
         ))}
       </div>
