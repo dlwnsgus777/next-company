@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { Company, Criteria } from '@/types'
+import { Company, Criteria, KanbanColumnConfig, DEFAULT_KANBAN_COLUMNS } from '@/types'
 import { MOCK_COMPANIES, MOCK_CRITERIA } from '@/lib/mock'
 
 // 기본 평가 기준
@@ -14,12 +14,14 @@ interface ModalState {
   companyDetail: { open: boolean; companyId?: string }
   companyForm: { open: boolean; companyId?: string } // companyId 없으면 추가, 있으면 수정
   criteria: { open: boolean }
+  kanbanSetting: { open: boolean }
 }
 
 interface AppState {
   // 데이터
   criteriaList: Criteria[]
   companies: Company[]
+  kanbanColumns: KanbanColumnConfig[]
 
   // UI 상태
   filterTarget: FilterTarget
@@ -29,6 +31,9 @@ interface AppState {
 
   // 평가 기준 액션
   setCriteriaList: (list: Criteria[]) => void
+
+  // 칸반 컬럼 액션
+  setKanbanColumns: (columns: KanbanColumnConfig[]) => void
 
   // 회사 CRUD
   addCompany: (company: Omit<Company, 'id' | 'createdAt' | 'updatedAt'>) => void
@@ -46,6 +51,7 @@ interface AppState {
   openCompanyAdd: () => void
   openCompanyEdit: (companyId: string) => void
   openCriteria: () => void
+  openKanbanSetting: () => void
   closeModal: (modal: keyof ModalState) => void
 }
 
@@ -54,6 +60,7 @@ export const useAppStore = create<AppState>()(
     (set) => ({
       criteriaList: DEFAULT_CRITERIA,
       companies: MOCK_COMPANIES,
+      kanbanColumns: DEFAULT_KANBAN_COLUMNS,
 
       filterTarget: 'ALL',
       sortBy: 'score',
@@ -62,9 +69,12 @@ export const useAppStore = create<AppState>()(
         companyDetail: { open: false },
         companyForm: { open: false },
         criteria: { open: false },
+        kanbanSetting: { open: false },
       },
 
       setCriteriaList: (list) => set({ criteriaList: list }),
+
+      setKanbanColumns: (kanbanColumns) => set({ kanbanColumns }),
 
       addCompany: (company) =>
         set((state) => ({
@@ -120,6 +130,10 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           modal: { ...state.modal, criteria: { open: true } },
         })),
+      openKanbanSetting: () =>
+        set((state) => ({
+          modal: { ...state.modal, kanbanSetting: { open: true } },
+        })),
       closeModal: (modal) =>
         set((state) => ({
           modal: {
@@ -133,6 +147,7 @@ export const useAppStore = create<AppState>()(
       partialize: (state) => ({
         criteriaList: state.criteriaList,
         companies: state.companies,
+        kanbanColumns: state.kanbanColumns,
       }),
     }
   )

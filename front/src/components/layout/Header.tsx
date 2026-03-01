@@ -2,10 +2,11 @@
 
 import { useAppStore } from '@/store/useAppStore'
 import { Button } from '@/components/ui/button'
-import { LayoutGrid, List, Settings, Plus } from 'lucide-react'
+import { LayoutGrid, List, Settings, Columns3, Plus } from 'lucide-react'
 
 export default function Header() {
-  const { viewMode, setViewMode, openCompanyAdd, openCriteria } = useAppStore()
+  const { viewMode, setViewMode, openCompanyAdd, openCriteria, openKanbanSetting } =
+    useAppStore()
 
   return (
     <header className="sticky top-0 z-10 bg-white border-b border-gray-200">
@@ -40,6 +41,19 @@ export default function Header() {
               순위
             </button>
           </div>
+
+          {/* 칸반 설정 — 칸반 뷰일 때만 노출 */}
+          {viewMode === 'kanban' && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-gray-600"
+              onClick={openKanbanSetting}
+            >
+              <Columns3 size={14} />
+              칸반 설정
+            </Button>
+          )}
 
           {/* 평가기준 설정 */}
           <Button

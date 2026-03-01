@@ -1,53 +1,17 @@
 'use client'
 
-import { ApplicationStatus, CompanyWithScore } from '@/types'
+import { CompanyWithScore } from '@/types'
+import { useAppStore } from '@/store/useAppStore'
 import { useFilteredCompanies } from '@/hooks/useFilteredCompanies'
 import KanbanColumn from './KanbanColumn'
 
-const COLUMNS: {
-  key: string
-  label: string
-  statuses: ApplicationStatus[]
-  accentColor: string
-}[] = [
-  {
-    key: 'not_applied',
-    label: '지원 전',
-    statuses: ['NOT_APPLIED'],
-    accentColor: 'bg-gray-400',
-  },
-  {
-    key: 'applied',
-    label: '서류 지원',
-    statuses: ['APPLIED', 'DOCUMENT_PASS'],
-    accentColor: 'bg-blue-400',
-  },
-  {
-    key: 'interview',
-    label: '면접 진행',
-    statuses: ['FIRST_INTERVIEW', 'SECOND_INTERVIEW'],
-    accentColor: 'bg-purple-400',
-  },
-  {
-    key: 'accepted',
-    label: '최종 합격',
-    statuses: ['FINAL_ACCEPTED'],
-    accentColor: 'bg-emerald-400',
-  },
-  {
-    key: 'rejected',
-    label: '탈락',
-    statuses: ['REJECTED', 'WITHDRAWN'],
-    accentColor: 'bg-red-300',
-  },
-]
-
-function groupByStatus(
-  companies: CompanyWithScore[]
+function groupByColumn(
+  companies: CompanyWithScore[],
+  columns: ReturnType<typeof useAppStore>['kanbanColumns']
 ): Record<string, CompanyWithScore[]> {
-  return COLUMNS.reduce(
+  return columns.reduce(
     (acc, col) => {
-      acc[col.key] = companies.filter((c) => col.statuses.includes(c.applicationStatus))
+      acc[col.id] = companies.filter((c) => col.statuses.includes(c.applicationStatus))
       return acc
     },
     {} as Record<string, CompanyWithScore[]>
@@ -55,17 +19,25 @@ function groupByStatus(
 }
 
 export default function KanbanBoard() {
+  const kanbanColumns = useAppStore((s) => s.kanbanColumns)
   const companies = useFilteredCompanies()
-  const grouped = groupByStatus(companies)
+  const grouped = groupByColumn(companies, kanbanColumns)
+
+  const colCount = kanbanColumns.length
+  const gridClass =
+    colCount <= 3 ? 'grid-cols-3' :
+    colCount === 4 ? 'grid-cols-4' :
+    colCount === 5 ? 'grid-cols-5' :
+    'grid-cols-6'
 
   return (
     <div className="max-w-screen-xl mx-auto px-4 pb-8">
-      <div className="grid grid-cols-5 gap-4">
-        {COLUMNS.map((col) => (
+      <div className={`grid ${gridClass} gap-4`}>
+        {kanbanColumns.map((col) => (
           <KanbanColumn
-            key={col.key}
+            key={col.id}
             label={col.label}
-            companies={grouped[col.key]}
+            companies={grouped[col.id]}
             accentColor={col.accentColor}
           />
         ))}
