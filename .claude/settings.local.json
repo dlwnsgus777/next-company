@@ -5,7 +5,11 @@
       "Bash(npx shadcn@latest:*)",
       "Bash(npm install:*)",
       "Bash(npx tsc:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(curl:*)",
+      "Bash(tar:*)",
+      "Bash(chmod +x:*)",
+      "Bash(./gradlew:*)"
     ]
   }
 }
