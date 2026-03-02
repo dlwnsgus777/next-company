@@ -1,4 +1,4 @@
-package com.company.model.config.entity
+package com.company.config.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.EntityListeners

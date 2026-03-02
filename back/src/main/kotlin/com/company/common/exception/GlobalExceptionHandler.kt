@@ -1,6 +1,6 @@
-package com.company.model.common.exception
+package com.company.common.exception
 
-import com.company.model.common.ApiResponse
+import com.company.common.ApiResponse
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

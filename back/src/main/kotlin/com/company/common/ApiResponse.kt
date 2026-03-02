@@ -1,4 +1,4 @@
-package com.company.model.common
+package com.company.common
 
 data class ApiResponse<T>(
     val success: Boolean,

@@ -9,7 +9,8 @@
       "Bash(curl:*)",
       "Bash(tar:*)",
       "Bash(chmod +x:*)",
-      "Bash(./gradlew:*)"
+      "Bash(./gradlew:*)",
+      "Bash(export:*)"
     ]
   }
 }
