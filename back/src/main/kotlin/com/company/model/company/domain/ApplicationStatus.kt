@@ -1,4 +1,4 @@
-package com.company.model.company
+package com.company.model.company.domain
 
 enum class ApplicationStatus {
     NOT_APPLIED,
