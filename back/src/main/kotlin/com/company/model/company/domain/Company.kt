@@ -14,7 +14,7 @@ class Company(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    var applicationStatus: ApplicationStatus = ApplicationStatus.NOT_APPLIED,
+    var jobChangeStatus: JobChangeStatus = JobChangeStatus.NOT_APPLIED,
 
     @Column(columnDefinition = "TEXT")
     var memo: String? = null

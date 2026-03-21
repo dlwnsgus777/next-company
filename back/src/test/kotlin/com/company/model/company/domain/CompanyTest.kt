@@ -8,7 +8,7 @@ class CompanyTest {
     @Test
     fun `기본 applicationStatus는 NOT_APPLIED이다`() {
         val company = Company(name = "테스트 회사")
-        assertThat(company.applicationStatus).isEqualTo(ApplicationStatus.NOT_APPLIED)
+        assertThat(company.jobChangeStatus).isEqualTo(JobChangeStatus.NOT_APPLIED)
     }
 
     @Test

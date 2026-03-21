@@ -1,6 +1,6 @@
 package com.company.model.company.domain
 
-enum class ApplicationStatus {
+enum class JobChangeStatus {
     NOT_APPLIED,
     APPLIED,
     DOCUMENT_PASS,
