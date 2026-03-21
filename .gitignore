@@ -47,4 +47,4 @@ Thumbs.db
 *.tsbuildinfo
 next-env.d.ts
 
-.omc
+.omc/
