@@ -1,11 +1,10 @@
-package com.company.model.company.query.dto
+package com.company.model.company.query
 
 import com.company.model.company.domain.Company
 import com.company.model.company.domain.JobChangeStatus
-import com.company.model.company.query.CompanyOutput
 import java.time.LocalDateTime
 
-data class CompanyResponse(
+data class CompanyOutput(
     val id: Long,
     val name: String,
     val jobChangeStatus: JobChangeStatus,
@@ -13,20 +12,12 @@ data class CompanyResponse(
     val createdAt: LocalDateTime
 ) {
     companion object {
-        fun from(company: Company) = CompanyResponse(
+        fun from(company: Company) = CompanyOutput(
             id = company.id,
             name = company.name,
             jobChangeStatus = company.jobChangeStatus,
             memo = company.memo,
             createdAt = company.createdAt
-        )
-
-        fun from(output: CompanyOutput) = CompanyResponse(
-            id = output.id,
-            name = output.name,
-            jobChangeStatus = output.jobChangeStatus,
-            memo = output.memo,
-            createdAt = output.createdAt
         )
     }
 }
