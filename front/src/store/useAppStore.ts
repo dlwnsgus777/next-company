@@ -99,7 +99,11 @@ export const useAppStore = create<AppState>()(
       addCompany: async (company) => {
         await companyApi.createCompany({
           name: company.name,
+          targetStatus: company.targetStatus,
+          jobPostingUrl: company.jobPostingUrl ?? null,
+          recruitmentDeadline: company.recruitmentDeadline ?? null,
           jobChangeStatus: company.jobChangeStatus,
+          scores: company.scores,
           memo: company.memo ?? null,
         })
         await get().loadCompanies()
@@ -108,7 +112,11 @@ export const useAppStore = create<AppState>()(
       updateCompany: async (id, data) => {
         await companyApi.updateCompany(id, {
           name: data.name,
+          targetStatus: data.targetStatus,
+          jobPostingUrl: data.jobPostingUrl ?? null,
+          recruitmentDeadline: data.recruitmentDeadline ?? null,
           jobChangeStatus: data.jobChangeStatus,
+          scores: data.scores,
           memo: data.memo ?? null,
         })
         await get().loadCompanies()

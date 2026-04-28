@@ -25,7 +25,11 @@ export interface PageResponse<T> {
 export interface CompanyResponse {
   id: number
   name: string
+  targetStatus: TargetStatus
+  jobPostingUrl: string | null
+  recruitmentDeadline: string | null
   jobChangeStatus: JobChangeStatus
+  scores: CompanyScore[]
   memo: string | null
   createdAt: string
   updatedAt?: string
@@ -33,13 +37,21 @@ export interface CompanyResponse {
 
 export interface CreateCompanyRequest {
   name: string
+  targetStatus?: TargetStatus
+  jobPostingUrl?: string | null
+  recruitmentDeadline?: string | null
   jobChangeStatus?: JobChangeStatus
+  scores?: CompanyScore[]
   memo?: string | null
 }
 
 export interface UpdateCompanyRequest {
   name?: string
+  targetStatus?: TargetStatus
+  jobPostingUrl?: string | null
+  recruitmentDeadline?: string | null
   jobChangeStatus?: JobChangeStatus
+  scores?: CompanyScore[]
   memo?: string | null
 }
 
@@ -91,11 +103,11 @@ export function toCompany(response: CompanyResponse): Company {
   return {
     id: response.id,
     name: response.name,
-    targetStatus: 'O' satisfies TargetStatus,
-    jobPostingUrl: undefined,
-    recruitmentDeadline: undefined,
+    targetStatus: response.targetStatus,
+    jobPostingUrl: response.jobPostingUrl ?? undefined,
+    recruitmentDeadline: response.recruitmentDeadline ?? undefined,
     jobChangeStatus: response.jobChangeStatus,
-    scores: [] satisfies CompanyScore[],
+    scores: response.scores ?? ([] satisfies CompanyScore[]),
     memo: response.memo ?? '',
     createdAt: response.createdAt,
     updatedAt: response.updatedAt ?? response.createdAt,

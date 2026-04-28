@@ -22,13 +22,28 @@ class CompanyQueryServiceTest {
 
     @Test
     fun `회사 목록 페이징 조회시 Page Output을 반환한다`() {
-        companyRepository.save(Company(name = "테스트 회사", jobChangeStatus = JobChangeStatus.NOT_APPLIED))
+        companyRepository.save(
+            Company(
+                name = "테스트 회사",
+                targetStatus = "△",
+                jobPostingUrl = "https://example.com/jobs/1",
+                recruitmentDeadline = java.time.LocalDate.of(2026, 5, 31),
+                jobChangeStatus = JobChangeStatus.NOT_APPLIED,
+                scores = """[{"criteriaId":"c1","actualInfo":"복지 좋음","score":80}]"""
+            )
+        )
 
         val result = companyQueryService.getAll(PageRequest.of(0, 10))
 
         assertThat(result.totalElements).isEqualTo(1)
         assertThat(result.content).hasSize(1)
         assertThat(result.content[0].name).isEqualTo("테스트 회사")
+        assertThat(result.content[0].targetStatus).isEqualTo("△")
+        assertThat(result.content[0].jobPostingUrl).isEqualTo("https://example.com/jobs/1")
+        assertThat(result.content[0].recruitmentDeadline).isEqualTo(java.time.LocalDate.of(2026, 5, 31))
+        assertThat(result.content[0].scores).hasSize(1)
+        assertThat(result.content[0].scores[0].criteriaId).isEqualTo("c1")
+        assertThat(result.content[0].scores[0].score).isEqualTo(80)
     }
 
     @Test

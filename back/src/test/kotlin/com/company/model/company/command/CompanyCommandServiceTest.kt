@@ -1,6 +1,7 @@
 package com.company.model.company.command
 
 import com.company.model.company.command.dto.CreateCompanyRequest
+import com.company.model.company.command.dto.CompanyScoreRequest
 import com.company.model.company.command.dto.UpdateCompanyRequest
 import com.company.model.company.domain.Company
 import com.company.model.company.domain.CompanyRepository
@@ -33,6 +34,28 @@ class CompanyCommandServiceTest {
     }
 
     @Test
+    fun `회사 생성시 화면 확장 필드를 함께 저장한다`() {
+        val request = CreateCompanyRequest(
+            name = "토스",
+            targetStatus = "△",
+            jobPostingUrl = "https://example.com/jobs/1",
+            recruitmentDeadline = java.time.LocalDate.of(2026, 5, 31),
+            jobChangeStatus = JobChangeStatus.APPLIED,
+            scores = listOf(CompanyScoreRequest(criteriaId = "c1", actualInfo = "복지 좋음", score = 80)),
+            memo = "확장 필드"
+        )
+
+        val id = companyCommandService.create(request)
+
+        val saved = companyRepository.findById(id).orElseThrow()
+        assertThat(saved.targetStatus).isEqualTo("△")
+        assertThat(saved.jobPostingUrl).isEqualTo("https://example.com/jobs/1")
+        assertThat(saved.recruitmentDeadline).isEqualTo(java.time.LocalDate.of(2026, 5, 31))
+        assertThat(saved.scores).contains("\"criteriaId\":\"c1\"")
+        assertThat(saved.scores).contains("\"score\":80")
+    }
+
+    @Test
     fun `회사 수정시 이름과 메모가 변경된다`() {
         val company = companyRepository.save(Company(name = "네이버", jobChangeStatus = JobChangeStatus.NOT_APPLIED))
         val request = UpdateCompanyRequest(name = "카카오", memo = "변경메모")
@@ -42,6 +65,26 @@ class CompanyCommandServiceTest {
         val updated = companyRepository.findById(company.id).orElseThrow()
         assertThat(updated.name).isEqualTo("카카오")
         assertThat(updated.memo).isEqualTo("변경메모")
+    }
+
+    @Test
+    fun `회사 수정시 화면 확장 필드를 함께 변경한다`() {
+        val company = companyRepository.save(Company(name = "네이버", jobChangeStatus = JobChangeStatus.NOT_APPLIED))
+        val request = UpdateCompanyRequest(
+            targetStatus = "X",
+            jobPostingUrl = "https://example.com/jobs/2",
+            recruitmentDeadline = java.time.LocalDate.of(2026, 6, 30),
+            scores = listOf(CompanyScoreRequest(criteriaId = "c2", actualInfo = "가까움", score = 95))
+        )
+
+        companyCommandService.update(company.id, request)
+
+        val updated = companyRepository.findById(company.id).orElseThrow()
+        assertThat(updated.targetStatus).isEqualTo("X")
+        assertThat(updated.jobPostingUrl).isEqualTo("https://example.com/jobs/2")
+        assertThat(updated.recruitmentDeadline).isEqualTo(java.time.LocalDate.of(2026, 6, 30))
+        assertThat(updated.scores).contains("\"criteriaId\":\"c2\"")
+        assertThat(updated.scores).contains("\"score\":95")
     }
 
     @Test
