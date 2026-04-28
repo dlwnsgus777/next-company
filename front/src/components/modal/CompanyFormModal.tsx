@@ -4,8 +4,8 @@ import { useState, useEffect, useMemo } from 'react'
 import { useAppStore } from '@/store/useAppStore'
 import {
   TargetStatus,
-  ApplicationStatus,
-  APPLICATION_STATUS_LABEL,
+  JobChangeStatus,
+  JOB_CHANGE_STATUS_LABEL,
   Criteria,
   Company,
 } from '@/types'
@@ -39,7 +39,7 @@ const TARGET_OPTIONS: { value: TargetStatus; label: string }[] = [
   { value: 'X', label: 'X 비목표' },
 ]
 
-const ALL_STATUSES: ApplicationStatus[] = [
+const ALL_STATUSES: JobChangeStatus[] = [
   'NOT_APPLIED',
   'APPLIED',
   'DOCUMENT_PASS',
@@ -63,7 +63,7 @@ interface FormState {
   targetStatus: TargetStatus
   jobPostingUrl: string
   recruitmentDeadline: string
-  applicationStatus: ApplicationStatus
+  jobChangeStatus: JobChangeStatus
   scores: FormScore[]
   memo: string
 }
@@ -74,7 +74,7 @@ function buildInitialState(criteriaList: Criteria[], company?: Company): FormSta
     targetStatus: company?.targetStatus ?? 'O',
     jobPostingUrl: company?.jobPostingUrl ?? '',
     recruitmentDeadline: company?.recruitmentDeadline ?? '',
-    applicationStatus: company?.applicationStatus ?? 'NOT_APPLIED',
+    jobChangeStatus: company?.jobChangeStatus ?? 'NOT_APPLIED',
     scores: criteriaList.map((c) => {
       const existing = company?.scores.find((s) => s.criteriaId === c.id)
       return {
@@ -102,10 +102,10 @@ export default function CompanyFormModal() {
   )
 
   // 모달이 열릴 때마다 폼 초기화
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (open) setForm(buildInitialState(criteriaList, company))
-  }, [open])
+  }, [open, criteriaList, company])
 
   // 예상 총점 실시간 계산
   const previewScore = useMemo(
@@ -140,7 +140,7 @@ export default function CompanyFormModal() {
       targetStatus: form.targetStatus,
       jobPostingUrl: form.jobPostingUrl || undefined,
       recruitmentDeadline: form.recruitmentDeadline || undefined,
-      applicationStatus: form.applicationStatus,
+      jobChangeStatus: form.jobChangeStatus,
       scores: form.scores,
       memo: form.memo,
     }
@@ -206,9 +206,9 @@ export default function CompanyFormModal() {
             <div className="space-y-1.5">
               <Label>진행 상태</Label>
               <Select
-                value={form.applicationStatus}
+                value={form.jobChangeStatus}
                 onValueChange={(v) =>
-                  setForm((p) => ({ ...p, applicationStatus: v as ApplicationStatus }))
+                  setForm((p) => ({ ...p, jobChangeStatus: v as JobChangeStatus }))
                 }
               >
                 <SelectTrigger className="w-full">
@@ -217,7 +217,7 @@ export default function CompanyFormModal() {
                 <SelectContent>
                   {ALL_STATUSES.map((s) => (
                     <SelectItem key={s} value={s}>
-                      {APPLICATION_STATUS_LABEL[s]}
+                      {JOB_CHANGE_STATUS_LABEL[s]}
                     </SelectItem>
                   ))}
                 </SelectContent>

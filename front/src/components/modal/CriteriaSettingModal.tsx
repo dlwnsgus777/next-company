@@ -29,10 +29,10 @@ export default function CriteriaSettingModal() {
   const [draggingId, setDraggingId] = useState<string | null>(null)
 
   // 모달이 열릴 때마다 초기화
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (open) setItems(buildDraft(criteriaList))
-  }, [open])
+  }, [open, criteriaList])
 
   const totalWeight = useMemo(
     () => items.reduce((acc, item) => acc + (Number(item.weight) || 0), 0),

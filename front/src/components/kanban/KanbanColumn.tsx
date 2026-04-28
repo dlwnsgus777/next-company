@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ApplicationStatus, CompanyWithScore } from '@/types'
+import { JobChangeStatus, CompanyWithScore } from '@/types'
 import { useAppStore } from '@/store/useAppStore'
 import CompanyCard from './CompanyCard'
 import { cn } from '@/lib/utils'
@@ -10,7 +10,7 @@ interface KanbanColumnProps {
   label: string
   companies: CompanyWithScore[]
   accentColor: string
-  statuses: ApplicationStatus[]
+  statuses: JobChangeStatus[]
 }
 
 export default function KanbanColumn({ label, companies, accentColor, statuses }: KanbanColumnProps) {
@@ -35,7 +35,7 @@ export default function KanbanColumn({ label, companies, accentColor, statuses }
     setIsDragOver(false)
     const companyId = e.dataTransfer.getData('companyId')
     if (!companyId || statuses.length === 0) return
-    updateApplicationStatus(companyId, statuses[0])
+    updateApplicationStatus(Number(companyId), statuses[0])
   }
 
   return (

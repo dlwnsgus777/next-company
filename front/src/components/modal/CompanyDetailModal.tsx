@@ -1,7 +1,7 @@
 'use client'
 
 import { useAppStore } from '@/store/useAppStore'
-import { APPLICATION_STATUS_LABEL, APPLICATION_STATUS_ORDER } from '@/types'
+import { JOB_CHANGE_STATUS_LABEL, JOB_CHANGE_STATUS_ORDER } from '@/types'
 import { calcTotalScore } from '@/lib/score'
 import { calcDday } from '@/lib/score'
 import {
@@ -41,15 +41,15 @@ export default function CompanyDetailModal() {
   const totalScore = calcTotalScore(company, criteriaList)
   const dday = calcDday(company.recruitmentDeadline)
 
-  const currentStepIndex = APPLICATION_STATUS_ORDER.indexOf(
-    company.applicationStatus as (typeof APPLICATION_STATUS_ORDER)[number]
+  const currentStepIndex = JOB_CHANGE_STATUS_ORDER.indexOf(
+    company.jobChangeStatus as (typeof JOB_CHANGE_STATUS_ORDER)[number]
   )
   const isTerminal =
-    company.applicationStatus === 'REJECTED' ||
-    company.applicationStatus === 'WITHDRAWN'
+    company.jobChangeStatus === 'REJECTED' ||
+    company.jobChangeStatus === 'WITHDRAWN'
   const nextStatus =
-    !isTerminal && currentStepIndex < APPLICATION_STATUS_ORDER.length - 1
-      ? APPLICATION_STATUS_ORDER[currentStepIndex + 1]
+    !isTerminal && currentStepIndex < JOB_CHANGE_STATUS_ORDER.length - 1
+      ? JOB_CHANGE_STATUS_ORDER[currentStepIndex + 1]
       : null
 
   const handleDelete = () => {
@@ -127,12 +127,12 @@ export default function CompanyDetailModal() {
           {isTerminal ? (
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1 flex-wrap opacity-40">
-                {APPLICATION_STATUS_ORDER.map((status, index) => (
+                {JOB_CHANGE_STATUS_ORDER.map((status, index) => (
                   <div key={status} className="flex items-center">
                     <span className="text-xs px-2.5 py-1 rounded-full bg-gray-100 text-gray-400 font-medium">
-                      {APPLICATION_STATUS_LABEL[status]}
+                      {JOB_CHANGE_STATUS_LABEL[status]}
                     </span>
-                    {index < APPLICATION_STATUS_ORDER.length - 1 && (
+                    {index < JOB_CHANGE_STATUS_ORDER.length - 1 && (
                       <ChevronRight className="w-3 h-3 text-gray-300 mx-0.5" />
                     )}
                   </div>
@@ -141,17 +141,17 @@ export default function CompanyDetailModal() {
               <span
                 className={cn(
                   'text-sm font-semibold px-3 py-1 rounded-full shrink-0',
-                  company.applicationStatus === 'REJECTED'
+                  company.jobChangeStatus === 'REJECTED'
                     ? 'bg-red-50 text-red-600'
                     : 'bg-gray-100 text-gray-500'
                 )}
               >
-                {APPLICATION_STATUS_LABEL[company.applicationStatus]}
+                {JOB_CHANGE_STATUS_LABEL[company.jobChangeStatus]}
               </span>
             </div>
           ) : (
             <div className="flex items-center gap-1 flex-wrap">
-              {APPLICATION_STATUS_ORDER.map((status, index) => {
+              {JOB_CHANGE_STATUS_ORDER.map((status, index) => {
                 const isCompleted = index < currentStepIndex
                 const isCurrent = index === currentStepIndex
                 return (
@@ -166,9 +166,9 @@ export default function CompanyDetailModal() {
                             : 'bg-gray-100 text-gray-400'
                       )}
                     >
-                      {APPLICATION_STATUS_LABEL[status]}
+                      {JOB_CHANGE_STATUS_LABEL[status]}
                     </span>
-                    {index < APPLICATION_STATUS_ORDER.length - 1 && (
+                    {index < JOB_CHANGE_STATUS_ORDER.length - 1 && (
                       <ChevronRight className="w-3 h-3 text-gray-300 mx-0.5" />
                     )}
                   </div>
@@ -184,7 +184,7 @@ export default function CompanyDetailModal() {
               className="text-xs"
               onClick={() => updateApplicationStatus(company.id, nextStatus)}
             >
-              다음 단계로 이동: {APPLICATION_STATUS_LABEL[nextStatus]} →
+              다음 단계로 이동: {JOB_CHANGE_STATUS_LABEL[nextStatus]} →
             </Button>
           )}
         </section>

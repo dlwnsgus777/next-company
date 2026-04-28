@@ -23,7 +23,7 @@ export default function CompanyCard({ company }: CompanyCardProps) {
 
   const handleDragStart = (e: React.DragEvent) => {
     draggingRef.current = true
-    e.dataTransfer.setData('companyId', company.id)
+    e.dataTransfer.setData('companyId', String(company.id))
     e.dataTransfer.effectAllowed = 'move'
   }
 

@@ -2,7 +2,7 @@
 
 import { useFilteredCompanies } from '@/hooks/useFilteredCompanies'
 import { useAppStore } from '@/store/useAppStore'
-import { APPLICATION_STATUS_LABEL } from '@/types'
+import { JOB_CHANGE_STATUS_LABEL } from '@/types'
 import DeadlineBadge from '@/components/common/DeadlineBadge'
 import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
@@ -81,7 +81,7 @@ export default function RankingList() {
 
             {/* 진행 상태 */}
             <span className="shrink-0 text-xs text-gray-500 w-16 text-right">
-              {APPLICATION_STATUS_LABEL[company.applicationStatus]}
+              {JOB_CHANGE_STATUS_LABEL[company.jobChangeStatus]}
             </span>
 
             {/* D-day */}

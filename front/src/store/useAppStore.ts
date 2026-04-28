@@ -1,18 +1,21 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { Company, Criteria, KanbanColumnConfig, DEFAULT_KANBAN_COLUMNS } from '@/types'
-import { MOCK_COMPANIES, MOCK_CRITERIA } from '@/lib/mock'
-
-// 기본 평가 기준
-const DEFAULT_CRITERIA: Criteria[] = MOCK_CRITERIA
+import {
+  Company,
+  Criteria,
+  KanbanColumnConfig,
+  DEFAULT_KANBAN_COLUMNS,
+  DEFAULT_CRITERIA,
+} from '@/types'
+import { companyApi, kanbanApi } from '@/lib/api'
 
 type FilterTarget = 'ALL' | 'O' | '△'
 type SortBy = 'score' | 'name' | 'deadline'
 type ViewMode = 'kanban' | 'rank'
 
 interface ModalState {
-  companyDetail: { open: boolean; companyId?: string }
-  companyForm: { open: boolean; companyId?: string } // companyId 없으면 추가, 있으면 수정
+  companyDetail: { open: boolean; companyId?: number }
+  companyForm: { open: boolean; companyId?: number } // companyId 없으면 추가, 있으면 수정
   criteria: { open: boolean }
   kanbanSetting: { open: boolean }
 }
@@ -32,14 +35,18 @@ interface AppState {
   // 평가 기준 액션
   setCriteriaList: (list: Criteria[]) => void
 
+  // 서버 동기화
+  loadCompanies: () => Promise<void>
+  loadKanbanColumns: () => Promise<void>
+
   // 칸반 컬럼 액션
-  setKanbanColumns: (columns: KanbanColumnConfig[]) => void
+  setKanbanColumns: (columns: KanbanColumnConfig[]) => Promise<void>
 
   // 회사 CRUD
-  addCompany: (company: Omit<Company, 'id' | 'createdAt' | 'updatedAt'>) => void
-  updateCompany: (id: string, data: Partial<Omit<Company, 'id' | 'createdAt'>>) => void
-  deleteCompany: (id: string) => void
-  updateApplicationStatus: (id: string, status: Company['applicationStatus']) => void
+  addCompany: (company: Omit<Company, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>
+  updateCompany: (id: number, data: Partial<Omit<Company, 'id' | 'createdAt'>>) => Promise<void>
+  deleteCompany: (id: number) => Promise<void>
+  updateApplicationStatus: (id: number, status: Company['jobChangeStatus']) => Promise<void>
 
   // UI 액션
   setFilterTarget: (filter: FilterTarget) => void
@@ -47,9 +54,9 @@ interface AppState {
   setViewMode: (mode: ViewMode) => void
 
   // 모달 액션
-  openCompanyDetail: (companyId: string) => void
+  openCompanyDetail: (companyId: number) => void
   openCompanyAdd: () => void
-  openCompanyEdit: (companyId: string) => void
+  openCompanyEdit: (companyId: number) => void
   openCriteria: () => void
   openKanbanSetting: () => void
   closeModal: (modal: keyof ModalState) => void
@@ -57,9 +64,9 @@ interface AppState {
 
 export const useAppStore = create<AppState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       criteriaList: DEFAULT_CRITERIA,
-      companies: MOCK_COMPANIES,
+      companies: [],
       kanbanColumns: DEFAULT_KANBAN_COLUMNS,
 
       filterTarget: 'ALL',
@@ -74,41 +81,56 @@ export const useAppStore = create<AppState>()(
 
       setCriteriaList: (list) => set({ criteriaList: list }),
 
-      setKanbanColumns: (kanbanColumns) => set({ kanbanColumns }),
+      loadCompanies: async () => {
+        const companies = await companyApi.getCompanies()
+        set({ companies })
+      },
 
-      addCompany: (company) =>
-        set((state) => ({
-          companies: [
-            ...state.companies,
-            {
-              ...company,
-              id: crypto.randomUUID(),
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            },
-          ],
-        })),
+      loadKanbanColumns: async () => {
+        const kanbanColumns = await kanbanApi.getKanbanColumns()
+        set({ kanbanColumns: kanbanColumns ?? DEFAULT_KANBAN_COLUMNS })
+      },
 
-      updateCompany: (id, data) =>
-        set((state) => ({
-          companies: state.companies.map((c) =>
-            c.id === id ? { ...c, ...data, updatedAt: new Date().toISOString() } : c
-          ),
-        })),
+      setKanbanColumns: async (kanbanColumns) => {
+        await kanbanApi.saveKanbanColumns(kanbanColumns)
+        set({ kanbanColumns })
+      },
 
-      deleteCompany: (id) =>
+      addCompany: async (company) => {
+        await companyApi.createCompany({
+          name: company.name,
+          jobChangeStatus: company.jobChangeStatus,
+          memo: company.memo ?? null,
+        })
+        await get().loadCompanies()
+      },
+
+      updateCompany: async (id, data) => {
+        await companyApi.updateCompany(id, {
+          name: data.name,
+          jobChangeStatus: data.jobChangeStatus,
+          memo: data.memo ?? null,
+        })
+        await get().loadCompanies()
+      },
+
+      deleteCompany: async (id) => {
+        await companyApi.deleteCompany(id)
         set((state) => ({
           companies: state.companies.filter((c) => c.id !== id),
-        })),
+        }))
+      },
 
-      updateApplicationStatus: (id, status) =>
+      updateApplicationStatus: async (id, status) => {
+        await companyApi.updateCompanyStatus(id, status)
         set((state) => ({
           companies: state.companies.map((c) =>
             c.id === id
-              ? { ...c, applicationStatus: status, updatedAt: new Date().toISOString() }
+              ? { ...c, jobChangeStatus: status, updatedAt: new Date().toISOString() }
               : c
           ),
-        })),
+        }))
+      },
 
       setFilterTarget: (filterTarget) => set({ filterTarget }),
       setSortBy: (sortBy) => set({ sortBy }),
@@ -146,8 +168,6 @@ export const useAppStore = create<AppState>()(
       name: 'next-company-store',
       partialize: (state) => ({
         criteriaList: state.criteriaList,
-        companies: state.companies,
-        kanbanColumns: state.kanbanColumns,
       }),
     }
   )

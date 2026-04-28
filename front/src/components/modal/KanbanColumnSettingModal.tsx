@@ -4,8 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useAppStore } from '@/store/useAppStore'
 import {
   KanbanColumnConfig,
-  ApplicationStatus,
-  APPLICATION_STATUS_LABEL,
+  JobChangeStatus,
+  JOB_CHANGE_STATUS_LABEL,
   ACCENT_COLOR_PRESETS,
 } from '@/types'
 import {
@@ -27,7 +27,7 @@ import {
 import { cn } from '@/lib/utils'
 import { GripVertical, Plus, Trash2 } from 'lucide-react'
 
-const ALL_STATUSES: ApplicationStatus[] = [
+const ALL_STATUSES: JobChangeStatus[] = [
   'NOT_APPLIED',
   'APPLIED',
   'DOCUMENT_PASS',
@@ -45,8 +45,8 @@ function buildDraft(columns: KanbanColumnConfig[]): DraftColumn[] {
 }
 
 // status → columnId 역매핑
-function buildStatusMap(columns: DraftColumn[]): Record<ApplicationStatus, string> {
-  const map = {} as Record<ApplicationStatus, string>
+function buildStatusMap(columns: DraftColumn[]): Record<JobChangeStatus, string> {
+  const map = {} as Record<JobChangeStatus, string>
   for (const col of columns) {
     for (const s of col.statuses) {
       map[s] = col.id
@@ -64,10 +64,10 @@ export default function KanbanColumnSettingModal() {
   const [draggingId, setDraggingId] = useState<string | null>(null)
 
   // 모달 열릴 때 초기화
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (open) setColumns(buildDraft(kanbanColumns))
-  }, [open])
+  }, [open, kanbanColumns])
 
   // status → columnId 역매핑
   const statusMap = buildStatusMap(columns)
@@ -113,7 +113,7 @@ export default function KanbanColumnSettingModal() {
 
   // ── 상태 배치 (Select) ────────────────────────────────────────────────────
 
-  const handleStatusAssign = (status: ApplicationStatus, targetColId: string) => {
+  const handleStatusAssign = (status: JobChangeStatus, targetColId: string) => {
     setColumns((prev) =>
       prev.map((col) => {
         // 기존 컬럼에서 제거
@@ -280,7 +280,7 @@ export default function KanbanColumnSettingModal() {
                       assignedColId ? 'text-gray-700' : 'text-red-500 font-medium'
                     )}
                   >
-                    {APPLICATION_STATUS_LABEL[status]}
+                    {JOB_CHANGE_STATUS_LABEL[status]}
                     {!assignedColId && (
                       <span className="ml-1.5 text-xs text-red-400">(미배치)</span>
                     )}

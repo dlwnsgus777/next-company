@@ -1,17 +1,17 @@
 'use client'
 
-import { CompanyWithScore } from '@/types'
+import { CompanyWithScore, KanbanColumnConfig } from '@/types'
 import { useAppStore } from '@/store/useAppStore'
 import { useFilteredCompanies } from '@/hooks/useFilteredCompanies'
 import KanbanColumn from './KanbanColumn'
 
 function groupByColumn(
   companies: CompanyWithScore[],
-  columns: ReturnType<typeof useAppStore>['kanbanColumns']
+  columns: KanbanColumnConfig[]
 ): Record<string, CompanyWithScore[]> {
   return columns.reduce(
     (acc, col) => {
-      acc[col.id] = companies.filter((c) => col.statuses.includes(c.applicationStatus))
+      acc[col.id] = companies.filter((c) => col.statuses.includes(c.jobChangeStatus))
       return acc
     },
     {} as Record<string, CompanyWithScore[]>

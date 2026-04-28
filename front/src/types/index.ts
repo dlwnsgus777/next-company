@@ -40,6 +40,10 @@ export const APPLICATION_STATUS_ORDER: ApplicationStatus[] = [
   'FINAL_ACCEPTED',
 ]
 
+export type JobChangeStatus = ApplicationStatus
+export const JOB_CHANGE_STATUS_LABEL = APPLICATION_STATUS_LABEL
+export const JOB_CHANGE_STATUS_ORDER = APPLICATION_STATUS_ORDER
+
 // 회사별 항목 점수
 export interface CompanyScore {
   criteriaId: string
@@ -49,12 +53,12 @@ export interface CompanyScore {
 
 // 회사
 export interface Company {
-  id: string
+  id: number
   name: string
   targetStatus: TargetStatus
   jobPostingUrl?: string
   recruitmentDeadline?: string  // ISO date string
-  applicationStatus: ApplicationStatus
+  jobChangeStatus: JobChangeStatus
   scores: CompanyScore[]
   memo?: string
   createdAt: string
@@ -93,4 +97,12 @@ export const ACCENT_COLOR_PRESETS: { label: string; value: string }[] = [
   { label: '주황',   value: 'bg-orange-400' },
   { label: '빨강',   value: 'bg-red-400' },
   { label: '분홍',   value: 'bg-pink-400' },
+]
+
+export const DEFAULT_CRITERIA: Criteria[] = [
+  { id: 'c1', name: '복지', weight: 35, order: 0 },
+  { id: 'c2', name: '집과의 거리', weight: 20, order: 1 },
+  { id: 'c3', name: '연봉', weight: 20, order: 2 },
+  { id: 'c4', name: '회사 규모', weight: 20, order: 3 },
+  { id: 'c5', name: '기술 스택', weight: 5, order: 4 },
 ]
