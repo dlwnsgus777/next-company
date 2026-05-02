@@ -59,11 +59,19 @@ export interface SaveKanbanColumnConfigRequest {
   columns: KanbanColumnConfig[]
 }
 
+export interface CurrentMember {
+  id: number
+  email: string
+  name: string
+  pictureUrl: string | null
+}
+
 type RequestBody = object | unknown[] | null
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       ...init.headers,
@@ -145,5 +153,19 @@ export const kanbanApi = {
 
   saveKanbanColumns(columns: KanbanColumnConfig[]): Promise<null> {
     return api.put<null>('/kanban-columns', { columns } satisfies SaveKanbanColumnConfigRequest)
+  },
+}
+
+export const authApi = {
+  getGoogleLoginUrl(): string {
+    return `${API_BASE_URL}/oauth2/authorization/google`
+  },
+
+  getMe(): Promise<CurrentMember> {
+    return api.get<CurrentMember>('/auth/me')
+  },
+
+  logout(): Promise<null> {
+    return api.post<null>('/auth/logout')
   },
 }

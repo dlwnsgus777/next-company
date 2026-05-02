@@ -2,11 +2,15 @@
 
 import { useAppStore } from '@/store/useAppStore'
 import { Button } from '@/components/ui/button'
-import { LayoutGrid, List, Settings, Columns3, Plus } from 'lucide-react'
+import { LayoutGrid, List, Settings, Columns3, Plus, LogOut } from 'lucide-react'
 
 export default function Header() {
-  const { viewMode, setViewMode, openCompanyAdd, openCriteria, openKanbanSetting } =
+  const { viewMode, currentMember, logout, setViewMode, openCompanyAdd, openCriteria, openKanbanSetting } =
     useAppStore()
+
+  if (!currentMember) {
+    return null
+  }
 
   return (
     <header className="sticky top-0 z-10 bg-white border-b border-gray-200">
@@ -71,6 +75,31 @@ export default function Header() {
             <Plus size={14} />
             회사 추가
           </Button>
+
+          {currentMember && (
+            <>
+              <div className="hidden sm:flex items-center gap-2 pl-2 text-sm text-gray-600">
+                {currentMember.pictureUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={currentMember.pictureUrl}
+                    alt=""
+                    className="h-7 w-7 rounded-full border border-gray-200"
+                  />
+                )}
+                <span className="max-w-28 truncate">{currentMember.name}</span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-gray-600"
+                onClick={() => logout().catch((error) => console.error('Failed to logout', error))}
+              >
+                <LogOut size={14} />
+                로그아웃
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </header>

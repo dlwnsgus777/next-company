@@ -7,7 +7,7 @@ import {
   DEFAULT_KANBAN_COLUMNS,
   DEFAULT_CRITERIA,
 } from '@/types'
-import { companyApi, kanbanApi } from '@/lib/api'
+import { authApi, companyApi, kanbanApi, CurrentMember } from '@/lib/api'
 
 type FilterTarget = 'ALL' | 'O' | '△'
 type SortBy = 'score' | 'name' | 'deadline'
@@ -25,6 +25,8 @@ interface AppState {
   criteriaList: Criteria[]
   companies: Company[]
   kanbanColumns: KanbanColumnConfig[]
+  currentMember: CurrentMember | null
+  authChecked: boolean
 
   // UI 상태
   filterTarget: FilterTarget
@@ -36,6 +38,7 @@ interface AppState {
   setCriteriaList: (list: Criteria[]) => void
 
   // 서버 동기화
+  loadCurrentMember: () => Promise<void>
   loadCompanies: () => Promise<void>
   loadKanbanColumns: () => Promise<void>
 
@@ -47,6 +50,7 @@ interface AppState {
   updateCompany: (id: number, data: Partial<Omit<Company, 'id' | 'createdAt'>>) => Promise<void>
   deleteCompany: (id: number) => Promise<void>
   updateApplicationStatus: (id: number, status: Company['jobChangeStatus']) => Promise<void>
+  logout: () => Promise<void>
 
   // UI 액션
   setFilterTarget: (filter: FilterTarget) => void
@@ -68,6 +72,8 @@ export const useAppStore = create<AppState>()(
       criteriaList: DEFAULT_CRITERIA,
       companies: [],
       kanbanColumns: DEFAULT_KANBAN_COLUMNS,
+      currentMember: null,
+      authChecked: false,
 
       filterTarget: 'ALL',
       sortBy: 'score',
@@ -80,6 +86,15 @@ export const useAppStore = create<AppState>()(
       },
 
       setCriteriaList: (list) => set({ criteriaList: list }),
+
+      loadCurrentMember: async () => {
+        try {
+          const currentMember = await authApi.getMe()
+          set({ currentMember, authChecked: true })
+        } catch {
+          set({ currentMember: null, authChecked: true, companies: [], kanbanColumns: DEFAULT_KANBAN_COLUMNS })
+        }
+      },
 
       loadCompanies: async () => {
         const companies = await companyApi.getCompanies()
@@ -138,6 +153,11 @@ export const useAppStore = create<AppState>()(
               : c
           ),
         }))
+      },
+
+      logout: async () => {
+        await authApi.logout()
+        set({ currentMember: null, companies: [], kanbanColumns: DEFAULT_KANBAN_COLUMNS })
       },
 
       setFilterTarget: (filterTarget) => set({ filterTarget }),
