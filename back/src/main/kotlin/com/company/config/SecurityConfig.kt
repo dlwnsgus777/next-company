@@ -37,13 +37,7 @@ class SecurityConfig(
                     }
                     .defaultSuccessUrl(successRedirectUrl, true)
             }
-            .logout { logout ->
-                logout
-                    .logoutUrl("/auth/logout")
-                    .logoutSuccessUrl(successRedirectUrl)
-                    .invalidateHttpSession(true)
-                    .deleteCookies("JSESSIONID")
-            }
+            .logout { it.disable() }
             .httpBasic { it.disable() }
             .formLogin { it.disable() }
             .headers { headers ->

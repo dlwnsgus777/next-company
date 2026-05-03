@@ -3,9 +3,11 @@ package com.company.model.member
 import com.company.model.member.domain.AuthProvider
 import com.company.model.member.domain.Member
 import com.company.model.member.domain.MemberRepository
+import org.springframework.http.HttpStatus
 import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.server.ResponseStatusException
 
 @Service
 class OAuth2MemberService(private val memberRepository: MemberRepository) {
@@ -30,6 +32,14 @@ class OAuth2MemberService(private val memberRepository: MemberRepository) {
 
         member.updateProfile(name = name, pictureUrl = pictureUrl)
         return member
+    }
+
+    @Transactional
+    fun getOrCreateCurrentMember(user: OAuth2User?): Member {
+        if (user == null) {
+            throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Login is required")
+        }
+        return saveOrUpdate(user)
     }
 
     @Transactional(readOnly = true)

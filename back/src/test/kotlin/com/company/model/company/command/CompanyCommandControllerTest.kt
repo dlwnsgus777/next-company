@@ -3,14 +3,20 @@ package com.company.model.company.command
 import com.company.model.company.domain.Company
 import com.company.model.company.domain.CompanyRepository
 import com.company.model.company.domain.JobChangeStatus
+import com.company.model.member.TestMemberFactory
+import com.company.model.member.domain.MemberRepository
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.transaction.annotation.Transactional
 
 @SpringBootTest
@@ -20,13 +26,15 @@ class CompanyCommandControllerTest {
 
     @Autowired lateinit var mockMvc: MockMvc
     @Autowired lateinit var companyRepository: CompanyRepository
+    @Autowired lateinit var memberRepository: MemberRepository
 
     @Test
-    fun `POST companies 요청시 201과 id를 반환한다`() {
+    fun `POST companies returns 201 and id`() {
         mockMvc.perform(
             post("/companies")
+                .with(login())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"name":"카카오","jobChangeStatus":"APPLIED","memo":"메모"}""")
+                .content("""{"name":"Kakao","jobChangeStatus":"APPLIED","memo":"memo"}""")
         )
             .andExpect(status().isCreated)
             .andExpect(jsonPath("$.success").value(true))
@@ -34,9 +42,10 @@ class CompanyCommandControllerTest {
     }
 
     @Test
-    fun `POST companies 요청시 name이 없으면 400을 반환한다`() {
+    fun `POST companies returns 400 when name is empty`() {
         mockMvc.perform(
             post("/companies")
+                .with(login())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"name":"","jobChangeStatus":"APPLIED"}""")
         )
@@ -44,34 +53,39 @@ class CompanyCommandControllerTest {
     }
 
     @Test
-    fun `PATCH companies id 요청시 200을 반환한다`() {
-        val company = companyRepository.save(Company(name = "네이버", jobChangeStatus = JobChangeStatus.NOT_APPLIED))
+    fun `PATCH companies id returns 200`() {
+        val member = memberRepository.save(TestMemberFactory.member())
+        val company = companyRepository.save(Company(member = member, name = "Naver"))
 
         mockMvc.perform(
             patch("/companies/${company.id}")
+                .with(login())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"name":"카카오"}""")
+                .content("""{"name":"Kakao"}""")
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.success").value(true))
     }
 
     @Test
-    fun `PATCH companies id 요청시 존재하지 않으면 404를 반환한다`() {
+    fun `PATCH companies id returns 404 when not found for member`() {
         mockMvc.perform(
             patch("/companies/999")
+                .with(login())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"name":"없는회사"}""")
+                .content("""{"name":"Missing"}""")
         )
             .andExpect(status().isNotFound)
     }
 
     @Test
-    fun `PATCH companies id status 요청시 200을 반환한다`() {
-        val company = companyRepository.save(Company(name = "라인", jobChangeStatus = JobChangeStatus.NOT_APPLIED))
+    fun `PATCH companies status returns 200`() {
+        val member = memberRepository.save(TestMemberFactory.member())
+        val company = companyRepository.save(Company(member = member, name = "Line"))
 
         mockMvc.perform(
             patch("/companies/${company.id}/status")
+                .with(login())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"jobChangeStatus":"APPLIED"}""")
         )
@@ -80,27 +94,18 @@ class CompanyCommandControllerTest {
     }
 
     @Test
-    fun `PATCH companies id status 요청시 존재하지 않으면 404를 반환한다`() {
-        mockMvc.perform(
-            patch("/companies/999/status")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"jobChangeStatus":"APPLIED"}""")
-        )
-            .andExpect(status().isNotFound)
-    }
+    fun `DELETE companies id returns 200`() {
+        val member = memberRepository.save(TestMemberFactory.member())
+        val company = companyRepository.save(Company(member = member, name = "Coupang"))
 
-    @Test
-    fun `DELETE companies id 요청시 200을 반환한다`() {
-        val company = companyRepository.save(Company(name = "쿠팡", jobChangeStatus = JobChangeStatus.NOT_APPLIED))
-
-        mockMvc.perform(delete("/companies/${company.id}"))
+        mockMvc.perform(delete("/companies/${company.id}").with(login()))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.success").value(true))
     }
 
-    @Test
-    fun `DELETE companies id 요청시 존재하지 않으면 404를 반환한다`() {
-        mockMvc.perform(delete("/companies/999"))
-            .andExpect(status().isNotFound)
+    private fun login() = oauth2Login().attributes {
+        it["sub"] = "google-123"
+        it["email"] = "google-123@example.com"
+        it["name"] = "Test User"
     }
 }

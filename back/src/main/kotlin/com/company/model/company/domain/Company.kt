@@ -1,6 +1,7 @@
 package com.company.model.company.domain
 
 import com.company.config.entity.BaseEntity
+import com.company.model.member.domain.Member
 import jakarta.persistence.*
 import java.time.LocalDate
 
@@ -9,6 +10,10 @@ import java.time.LocalDate
 class Company(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "member_id", nullable = false)
+    val member: Member,
 
     @Column(nullable = false)
     var name: String,

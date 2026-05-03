@@ -7,8 +7,10 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.Authentication
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.core.user.OAuth2User
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -31,9 +33,12 @@ class AuthController(private val oauth2MemberService: OAuth2MemberService) {
     }
 
     @PostMapping("/logout")
-    fun logout(request: HttpServletRequest, response: HttpServletResponse): ResponseEntity<ApiResponse<Nothing>> {
-        request.logout()
-        request.getSession(false)?.invalidate()
+    fun logout(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        authentication: Authentication?
+    ): ResponseEntity<ApiResponse<Nothing>> {
+        SecurityContextLogoutHandler().logout(request, response, authentication)
         response.addHeader("Set-Cookie", "JSESSIONID=; Path=/; Max-Age=0; HttpOnly")
         return ResponseEntity.ok(ApiResponse.ok())
     }

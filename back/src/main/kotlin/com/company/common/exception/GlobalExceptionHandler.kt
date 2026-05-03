@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.server.ResponseStatusException
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
@@ -15,7 +16,7 @@ class GlobalExceptionHandler {
     fun handleEntityNotFound(e: EntityNotFoundException): ResponseEntity<ApiResponse<Nothing>> {
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
-            .body(ApiResponse.fail(e.message ?: "리소스를 찾을 수 없습니다."))
+            .body(ApiResponse.fail(e.message ?: "Resource not found."))
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
@@ -31,13 +32,20 @@ class GlobalExceptionHandler {
     fun handleIllegalArgument(e: IllegalArgumentException): ResponseEntity<ApiResponse<Nothing>> {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(ApiResponse.fail(e.message ?: "잘못된 요청입니다."))
+            .body(ApiResponse.fail(e.message ?: "Invalid request."))
+    }
+
+    @ExceptionHandler(ResponseStatusException::class)
+    fun handleResponseStatus(e: ResponseStatusException): ResponseEntity<ApiResponse<Nothing>> {
+        return ResponseEntity
+            .status(e.statusCode)
+            .body(ApiResponse.fail(e.reason ?: "Request failed."))
     }
 
     @ExceptionHandler(Exception::class)
     fun handleGeneral(e: Exception): ResponseEntity<ApiResponse<Nothing>> {
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(ApiResponse.fail("서버 오류가 발생했습니다."))
+            .body(ApiResponse.fail("Internal server error."))
     }
 }

@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS member
 CREATE TABLE IF NOT EXISTS company
 (
     id                BIGSERIAL PRIMARY KEY,
+    member_id         BIGINT       NOT NULL,
     name              VARCHAR(255) NOT NULL,
     target_status     VARCHAR(10)  NOT NULL DEFAULT 'O',
     job_posting_url   VARCHAR(2048),
@@ -23,13 +24,17 @@ CREATE TABLE IF NOT EXISTS company
     scores            TEXT         NOT NULL DEFAULT '[]',
     memo              TEXT,
     created_at        TIMESTAMP    NOT NULL,
-    updated_at        TIMESTAMP    NOT NULL
+    updated_at        TIMESTAMP    NOT NULL,
+    CONSTRAINT fk_company_member FOREIGN KEY (member_id) REFERENCES member (id)
 );
 
 CREATE TABLE IF NOT EXISTS kanban_column_config
 (
     id         BIGSERIAL PRIMARY KEY,
+    member_id  BIGINT    NOT NULL,
     columns    TEXT      NOT NULL,
     created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL
+    updated_at TIMESTAMP NOT NULL,
+    CONSTRAINT uk_kanban_column_config_member UNIQUE (member_id),
+    CONSTRAINT fk_kanban_column_config_member FOREIGN KEY (member_id) REFERENCES member (id)
 );

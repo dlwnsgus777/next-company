@@ -2,7 +2,8 @@ package com.company.model.kanban.query
 
 import com.company.model.kanban.domain.KanbanColumnConfig
 import com.company.model.kanban.domain.KanbanColumnConfigRepository
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.company.model.member.TestMemberFactory
+import com.company.model.member.domain.MemberRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,14 +16,22 @@ class KanbanColumnConfigQueryServiceTest {
 
     @Autowired lateinit var kanbanColumnConfigQueryService: KanbanColumnConfigQueryService
     @Autowired lateinit var kanbanColumnConfigRepository: KanbanColumnConfigRepository
-    @Autowired lateinit var objectMapper: ObjectMapper
+    @Autowired lateinit var memberRepository: MemberRepository
 
     @Test
-    fun `칸반 설정이 있으면 KanbanColumnConfigResponse를 반환한다`() {
-        val columnsJson = """[{"id":"col1","label":"지원 전","statuses":["NOT_APPLIED"],"accentColor":"#ccc","order":0}]"""
-        kanbanColumnConfigRepository.save(KanbanColumnConfig(columns = columnsJson))
+    fun `get returns config for the member`() {
+        val member = memberRepository.save(TestMemberFactory.member(providerId = "google-1"))
+        val otherMember = memberRepository.save(TestMemberFactory.member(providerId = "google-2"))
+        val columnsJson = """[{"id":"col1","label":"Todo","statuses":["NOT_APPLIED"],"accentColor":"#ccc","order":0}]"""
+        kanbanColumnConfigRepository.save(KanbanColumnConfig(member = member, columns = columnsJson))
+        kanbanColumnConfigRepository.save(
+            KanbanColumnConfig(
+                member = otherMember,
+                columns = """[{"id":"other","label":"Other","statuses":["APPLIED"],"accentColor":"#111","order":0}]"""
+            )
+        )
 
-        val result = kanbanColumnConfigQueryService.get()
+        val result = kanbanColumnConfigQueryService.get(member)
 
         assertThat(result).isNotNull
         assertThat(result!!.columns).hasSize(1)
@@ -30,8 +39,11 @@ class KanbanColumnConfigQueryServiceTest {
     }
 
     @Test
-    fun `칸반 설정이 없으면 null을 반환한다`() {
-        val result = kanbanColumnConfigQueryService.get()
+    fun `get returns null when member has no config`() {
+        val member = memberRepository.save(TestMemberFactory.member())
+
+        val result = kanbanColumnConfigQueryService.get(member)
+
         assertThat(result).isNull()
     }
 }

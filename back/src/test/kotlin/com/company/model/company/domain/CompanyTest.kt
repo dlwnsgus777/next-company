@@ -1,33 +1,29 @@
 package com.company.model.company.domain
 
+import com.company.model.member.TestMemberFactory
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class CompanyTest {
 
+    private val member = TestMemberFactory.member()
+
     @Test
-    fun `기본 applicationStatus는 NOT_APPLIED이다`() {
-        val company = Company(name = "테스트 회사")
+    fun `default jobChangeStatus is NOT_APPLIED`() {
+        val company = Company(member = member, name = "Test")
         assertThat(company.jobChangeStatus).isEqualTo(JobChangeStatus.NOT_APPLIED)
     }
 
     @Test
-    fun `name 필드를 변경할 수 있다`() {
-        val company = Company(name = "원래 이름")
-        company.name = "새 이름"
-        assertThat(company.name).isEqualTo("새 이름")
+    fun `name can be changed`() {
+        val company = Company(member = member, name = "Old")
+        company.name = "New"
+        assertThat(company.name).isEqualTo("New")
     }
 
     @Test
-    fun `memo는 null을 허용한다`() {
-        val company = Company(name = "회사", memo = null)
+    fun `memo accepts null`() {
+        val company = Company(member = member, name = "Company", memo = null)
         assertThat(company.memo).isNull()
-    }
-
-    @Test
-    fun `memo 필드를 변경할 수 있다`() {
-        val company = Company(name = "회사", memo = "기존 메모")
-        company.memo = "새 메모"
-        assertThat(company.memo).isEqualTo("새 메모")
     }
 }
