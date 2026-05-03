@@ -1,6 +1,7 @@
 package com.company.config
 
 import com.company.model.member.OAuth2MemberUserService
+import com.company.model.member.OAuth2MemberOidcUserService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -12,6 +13,7 @@ import org.springframework.security.web.SecurityFilterChain
 @EnableWebSecurity
 class SecurityConfig(
     private val oauth2MemberUserService: OAuth2MemberUserService,
+    private val oauth2MemberOidcUserService: OAuth2MemberOidcUserService,
     @Value("\${app.oauth2.success-redirect-url}") private val successRedirectUrl: String
 ) {
 
@@ -31,6 +33,7 @@ class SecurityConfig(
                 oauth
                     .userInfoEndpoint { userInfo ->
                         userInfo.userService(oauth2MemberUserService)
+                        userInfo.oidcUserService(oauth2MemberOidcUserService)
                     }
                     .defaultSuccessUrl(successRedirectUrl, true)
             }
